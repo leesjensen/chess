@@ -44,10 +44,6 @@ public class ChessPiece {
         return type;
     }
 
-    private record MoveRule(boolean single, int[][] directions) {
-
-    }
-
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -56,25 +52,28 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        var piece = board.getPiece(myPosition);
         var moves = new ArrayList<ChessMove>();
-        if (piece.type.equals(this.type) && piece.pieceColor.equals(this.pieceColor)) {
-            if (piece.type.equals(PieceType.PAWN)) {
+        if (equals(board.getPiece(myPosition))) {
+            if (getPieceType().equals(PieceType.PAWN)) {
                 calcPawnMoves(board, myPosition, moves);
             } else {
-                var moveMap = Map.of(
-                        PieceType.KING, new MoveRule(true, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
-                        PieceType.QUEEN, new MoveRule(false, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
-                        PieceType.ROOK, new MoveRule(false, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}),
-                        PieceType.BISHOP, new MoveRule(false, new int[][]{{1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
-                        PieceType.KNIGHT, new MoveRule(true, new int[][]{{2, -1}, {2, 1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}})
-                );
 
-                calcMoves(board, myPosition, myPosition, moveMap.get(piece.getPieceType()), moves);
+                calcMoves(board, myPosition, myPosition, moveRules.get(getPieceType()), moves);
             }
         }
         return moves;
     }
+
+    private record MoveRule(boolean single, int[][] directions) {
+    }
+
+    private static final Map<PieceType, MoveRule> moveRules = Map.of(
+            PieceType.KING, new MoveRule(true, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
+            PieceType.QUEEN, new MoveRule(false, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
+            PieceType.ROOK, new MoveRule(false, new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}),
+            PieceType.BISHOP, new MoveRule(false, new int[][]{{1, -1}, {1, 1}, {-1, 1}, {-1, -1}}),
+            PieceType.KNIGHT, new MoveRule(true, new int[][]{{2, -1}, {2, 1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}})
+    );
 
     private void calcMoves(ChessBoard board, ChessPosition startPos, ChessPosition pos, MoveRule rule, List<ChessMove> moves) {
         for (int[] direction : rule.directions) {
@@ -116,9 +115,9 @@ public class ChessPiece {
 
         // Double jump
         if ((startPos.getRow() == 2 && pieceColor == ChessGame.TeamColor.WHITE) || (startPos.getRow() == 7 && pieceColor == ChessGame.TeamColor.BLACK)) {
-            var endPos2 = new ChessPosition(startPos.getRow() + direction + direction, startPos.getColumn());
-            if (pieceAtPos == null && getPieceAt(board, endPos2) == null) {
-                moves.add(new ChessMove(startPos, endPos2, null));
+            var endPosDoubleJump = new ChessPosition(startPos.getRow() + direction + direction, startPos.getColumn());
+            if (pieceAtPos == null && getPieceAt(board, endPosDoubleJump) == null) {
+                moves.add(new ChessMove(startPos, endPosDoubleJump, null));
             }
         }
         // attack left diagonal if available

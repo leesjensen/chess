@@ -13,7 +13,7 @@ import static chess.ChessGame.TeamColor.WHITE;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private final ChessPiece[][] board = new ChessPiece[8][8];
+    private ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {
 
@@ -45,11 +45,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        for (var r = 0; r < 8; r++) {
-            for (var c = 0; r < 8; r++) {
-                board[r][c] = null;
-            }
-        }
+        board = new ChessPiece[8][8];
 
         for (var c = 0; c < 8; c++) {
             board[1][c] = new ChessPiece(WHITE, ChessPiece.PieceType.PAWN);
